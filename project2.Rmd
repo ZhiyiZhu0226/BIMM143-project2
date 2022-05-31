@@ -1,0 +1,277 @@
+---
+title: "Project 2"
+output: html_notebook
+---
+## Introduction (20 points)
+
+#### 5 points for specific, measurable, and clear scientific question.
+
+Scientific question: Knowing that altering the expression of specific marker genes in pluripotent cells can generate hepatocyte-like cells (HLCs), are the expression level of those marker genes similar in HLCs and primary hepatocytes? 
+
+#### 5 points for background on the protein/gene/species of interest and where the data is sourced from.
+
+Background: Hepatocyte-like cells (HLCs) are cells that are derived from other cell types (such as induced pluripotent stem cells and fibroblasts), while having similar biological functions as primary hepatocytes do (Huang et al., 2011). Considiring the worldwide shortage of donor livers available for studies of genetic aspects of human hepatic disease and orthotropic liver transplants (Si-Tayeb et al., 2010), HLCs is a good alternative source for both clinical and research use. 
+
+HLCs are induced by alternating the expression of several marker genes in pluripotent cells and fibrobalsts. In previous studies using mouse models, it was found HLCs can be induced by altering the expression of the following marker genes: FOXA2, GATA4, and HNF4A (Si-Tayeb et al., 2010). Another study using pig models have found that altering the expression of CEBPα can also induce HLCs (Fráguas-Eggenschwiler., 2021).
+
+It was proved using mice models that correctly induced HLCs were able to restore liver functions in vivo (Huang et al., 2011). However, this technology is still immature: A group of HLCs were found to have unnatural high expression of Cdx2 (a marker for intestinal differentication) compared to PHHs, causing those HLCs to hve impaired hepatic functions (Morris et al., 2014). In addition, even for HLCs that have normal hepatic function, the overall gene expression pattern of those HLCs greately differs from that of primary hepatocytes (PHHs) (Gao et al., 2017). This difference may be inevitable since the HLCs do come from a cell source than the PHHs do. However, we expect the marker genes that are altered to induced differenticaion to have similar expressions in functional HLCs and PHHs, since in theory, only cells with correct level of those genes can be induced to PHHs. We will also expect similar expression levels of marker genes for other cell types (such as Cdx2) in functional HLC and PHHs, since high expression levels of other cell type's marker gene may cause impared hepatic function.
+
+#### 5 points for clear, specific, and measurable scientific hypothesis that is in the form of an if-then statement.
+
+Therefore, we propose the following hypothesis: If a hepatocyte-like cell (HLC) has phenotypes similar to natural hepatocytes, then no matter what the induction method is or how the general gene expression pattern differs, its expression of the following marker genes - FOXA2, GATA4, HNF4a, CEBPα, CDX2 - should also be similar to natural hepatocytes.
+
+#### 5 points for description of what analyses were done and how the data was downloaded for the project.
+
+My analysis contains 2 parts: The first part will be pairwise sequence alignment. The discovery of FOXA2, GATA4, HNF4a being markers for HLCs and CDX2 being the reason for impaired hepatic function is based on mouse models, and the discovery of CEBPα being HLC markers is based on pig models; By performing pairwise sequence alignment on those genes and their human analog, we can see the similarity of the genes between species. For example, we can align the human CEBPα and pig CEBPα, and if the alignment score is high, we say this gene is similar in humans and pigs, thus we can assume that CEBPα is also a hepatocyte marker gene in humans, and altering CEBPα can help with inducing human cells into HLCs. Similarly, if the alignment score is low, CEBPα may not play a similar role in humans and not be a marker gene. In this case, if all 4 other genes have similar expression in HLCs and hepatocytes while CEBPα doesn't, the hypothesis (the expression of marker genes in HLCs and hepatocytes are similar) can still be true, since CEBPα may not be a marker gene in human. The fasta files used for alignment are mRNA sequences downloaded from NCBI nucleotide (specific accession number as listed below).  
+
+1. Mouse FOXA2: NM_001291065.1
+2. Human FOXA2: NM_021784.5
+3. Mouse GATA4: NM_001310610.1
+4. Human GATA4: NM_001308093.3
+5. Mouse HNF4a: NM_001312906.1
+6. Human HNF4a: NM_000457.6
+7. Pig CEBPα: XM_003127015.4
+8. Human CEBPα: NM_001285829.2
+9. Mouse CDX2:  NM_007673.3
+10. Human CDX2: NM_001354700.2
+
+The second part will be RNAseq analysis, which will be used to measure the expression level of each gene, and it will output a table where each gene has a pval. By checking the pval of the 5 target gene, we can see if their expression levels differ in HLC and hepatocytes. The fastq files are downloaded from NCBI GEO, (https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103078), and it is the sequencing results of 4 hiHeps (HLC1), 4 iPSC-HLCs (HLC2), and 4 primary hepatocytes.
+
+## Loading in Packages (15 points)
+
+#### 10 points for definition of each of the packages loaded.
+
+The following packages will be loaded:
+
+1. stringr: a string processing package that contain the function str_split, which is used for spliting a string while generating metatable for RNAseq.
+2. sjmisc: a string processing package that contain the function str_contains, which is used for spliting a string while generating metatable for RNAseq.
+3. rhdf5: a package that provides an interface between HDF5 and R, needed for reading h5 files into R while using tximport.
+4. tximport: a package used for importing alignment results of multiple samples (such as h5 files outputted by kallisto) into R as a count matrix.
+5. EnsDb.Hsapiens.v75: Ensembl based annotation package, needed for generating the gene list required by tximport so that alingment results can be converted to count matrix.
+6. DESeq2: package that runs differential gene expression analysis based on the negative binomial distribution. 
+7. Biostrings: package for read in fasta files as strings.
+8. DECIPHER: use to color code the alignment results
+9. dplyr: package needed for data manipulation; it's mutate function is used while plotting volcano plot
+10. ggplot2: package needed for plotting volcano plot and 
+11. pheatmap: package needed for plotting a heatmap of expression of same genes across samples
+
+
+#### 5 points for correctly loading all of the packages needed and stating anything that needs to be done to load the packages (downloading the packages)
+
+The following package can be directly downloaded via install.packages()'
+
+```{r}
+## 
+# string/data wrangling packages
+library(dplyr)
+library(stringr) ## needed for str_split
+library(sjmisc) ## needed for str_contains
+
+# plotting packages
+library(ggplot2)
+library(pheatmap)
+```
+
+The folling package need to be downloaded via bioconductor: for exapmle, BiocManager::install("ggmsa").
+```{r}
+## Packages for alignment
+library(Biostrings)
+library(DECIPHER)
+
+# Packages for RNAseq
+library(rhdf5) ## needed for reading h5 files
+library(tximport)
+library(DESeq2)
+library(EnsDb.Hsapiens.v75) ## needed for generating tx2 gene list
+```
+
+## Performing Bioinformatics Analysis
+#### 5 points for a description each of the bioinformatics method that includes data types read in and how the method works. 
+Part1: use pairwise sequence alignment to compare similarity of human genes with their animal anaologs. This will be used on mRNAs, since the whole genome sequene contain too much introns that will make the alignment too long. 
+```{r}
+## read in fastas for the 10 genes and store them in a global variable called fastas; the file genes.fasta stores all 10 genes
+fastas <- readAAStringSet("fastas/genes.fasta")
+
+## a function that takes in a gene name and prints the alignment results between that human gene and it's animal analog
+align <- function(name,fasta){
+  cat("For human gene", name, "and it's animal analog: \n")
+  for(i in 1:length(fasta)){        
+    tmp <- fasta[i]
+    if(str_contains(toupper(names(fasta[i])), name)){
+      seq1 <- fasta[i]
+      seq2 <- fasta[i+1]
+      # do local alignment since there we are aligning 
+      mat <- nucleotideSubstitutionMatrix(match = 1, mismatch = -1, baseOnly = TRUE)
+      alg <- pairwiseAlignment(pattern = seq1, subject = seq2,type="local",substitutionMatrix = mat, gapOpening = 5, gapExtension = 1)
+      cat("The local consensus sequence is: \n")
+      print(compareStrings(alg))
+      cat("The alignment score is: ", score(alg))
+      cat("\n")
+      cat("The percent sequence identity is: ", pid(alg))
+      cat("\n")
+      
+      seq <- c(alignedPattern(alg), alignedSubject(alg))
+      #BrowseSeqs(seq) ## give a color coded version of the whole alignment; it will open a html page while running notebook, but the html won't be stored anywhere; will figure out how to generate HTML link/pdf latter
+      break
+    }
+  }
+} 
+```
+
+```{r}
+align("CDX2",fastas)
+align("CEBPA",fastas)
+align("FOXA2",fastas)
+align("GATA4",fastas)
+align("HNF4A",fastas)
+```
+For all 5 genes, most percent sequence identity exceeds exceeds 80% and the alignment score is around 1000; considering those are mRNA seqs and there could be different splicing patterns, unsimilarity to some extent is expected; therefore we conclude all 5 human genes are similar with their animal anologs.
+
+Part2: use RNAseq to determine if target gene have similar expression in HLC and hepatocytes. The raw fastq files are aligned using command line alignment tool kallisto; the alignment results is stored in h5 files, which can be imported into R as a gene count matrix using tximport.
+
+```{r}
+#get a tx2gene list base on hg19
+txRaw <- transcripts(EnsDb.Hsapiens.v75, return.type = "DataFrame")
+tx2gene <- data.frame(txRaw$tx_id,txRaw$gene_id,stringsAsFactors = TRUE)
+names(tx2gene)<-c("transcript_id","gene_id")
+head(tx2gene)
+```
+```{r}
+#get a metatable
+# filenames.txt is the names of the raw fastq files (such as hiHep1_mRNA.fastq.gz); it is generated by running ls | grep "gz" >> filenames.txt
+
+fastqs <- read.csv('kallisto/filenames.txt',sep = "\n",header = FALSE)
+
+#get the row names
+metaNames <- vector(mode="character", length=12)
+for (i in 1:nrow(fastqs)) {
+    str <- paste(fastqs[i,1])
+    x <- str_split(str, "_mRNA",simplify = TRUE)  
+    if(str_contains(x[1,1], "iPSC")){    #the iPSC is named as hiPSC, but the article uses iPSC
+        y <- gsub("h", "", x[1,1])
+        metaNames[i] <- y 
+    }else{
+        metaNames[i] = x[1,1]
+    }   
+}
+
+#get folder names
+folderNames <- vector(mode="character", length=12)
+for (i in 1:nrow(fastqs)) {
+    str <- paste(fastqs[i,1])
+    x <- str_split(str, ".fastq",simplify = TRUE)   
+    folderNames[i] = x[1,1]
+}
+
+#get the conditions in 2 ways
+cond <- vector(mode="character", length=12)
+cond2 <- vector(mode="character", length=12)
+for (i in 1:length(folderNames)){
+    if(str_contains(folderNames[i], "hiHep")){      
+        cond[i] <- "hiHep"
+        cond2[i] <- "HLC"
+    }else if (str_contains(folderNames[i], "hiPSC-Hep")){
+        cond[i] <- "iPSC.Hep"
+        cond2[i] <- "HLC"
+    }else if (str_contains(folderNames[i], "PHH")){
+        cond[i] <- "PHH"
+        cond2[i] <- "PHH"
+    }
+}
+
+samples <- data.frame(folderNames,cond,cond2,stringsAsFactors = TRUE)
+names(samples)<-c("folderNames","condition","condition_2")
+rownames(samples)<-metaNames
+head(samples,12)
+```
+
+```{r}
+#get abundance files
+paths <- samples$folderNames
+files <- file.path("kallisto",paths, "abundance.h5")
+names(files) <- metaNames
+all(file.exists(files))
+```
+```{r}
+#Translate kallisto results to gene count tables using tximport
+#import results base on genes, not transcripts
+txi.kallisto <- tximport(files, type = "kallisto", tx2gene = tx2gene, txOut = FALSE,ignoreAfterBar = TRUE,abundanceCol = "TPM") #txOut=TRUE tx:transcript
+typeof(txi.kallisto)
+names(txi.kallisto)
+head(txi.kallisto$counts)
+```
+
+```{r}
+## Run a PCA to check if the overall gene expression differes between HLCs and PHHs
+dds <- DESeqDataSetFromTximport(txi.kallisto, colData = samples, design = ~condition)
+
+#Record the condition for PCA, in this case, cell type. Will be used forlabeling in PCA plot
+CellType <- paste(rownames(samples)) #add the column as chars/strings, not integers
+#Do a PCA on transformed count matrix
+#transform data using vst to normalize
+vsd <- vst(dds, blind=FALSE)
+vsdM <- t(assay(vsd)) #vsdM: vsd Matrix, the transpose of normalized raw counts
+```
+
+
+```{r}
+#Run PCA on transformed data
+vsdPCA <- prcomp(vsdM) 
+label <- factor(paste(samples$condition))
+plot(vsdPCA$x[, c(1, 2)], col = label, 
+     xlab = "PC1", ylab = "PC2")
+```
+
+We can see in terms of gene expression levels, not only HLCs differ from PHHS, the 2 types of HLCs also differs from each other. This agrees with previous findings. 
+
+```{r}
+## Use DEseq to run differential gene expression
+dds <- DESeqDataSetFromTximport(txi.kallisto, colData = samples, design = ~condition_2)
+dds <- DESeq(dds)
+res <- as.data.frame(results(dds, contrast=c("condition_2","HLC","PHH")))
+```
+
+```{r}
+# use gene cards, find the ensg of the 5 target genes
+# add gene names to res
+tmp <- ensembldb::select(EnsDb.Hsapiens.v75, keys= rownames(res), keytype = "GENEID", columns = c("GENEID","SYMBOL"))
+tmp2 <- data.frame(tmp$SYMBOL)
+rownames(tmp2) <- tmp$GENEID
+res <- merge(res, tmp2,by = 'row.names', all = TRUE)
+```
+
+```{r}
+genes <- c("CDX2","CEBPA","GATA4","FOXA2","HNF4A")
+res[res$tmp.SYMBOL %in% genes, ] 
+```
+
+we can see the except CDX2, the other 4 genes all have padj < 0.05, therefore the hepatocyte markers have similar expression levels in HLCs and PHHs; it is interesting that CDX2, a intestine marker, have different expression levels in HLCs; this suggests even HLCs that are functional in vivo could have low-level colon signatures. 
+
+Let's try to show this differential expression using a volcano plot.
+
+TODO: I tried labeling the 5 genes in the volcano plot, but for some reason failed; will figure this out in final notebook. Reference: https://www.biostars.org/p/381048/
+```{r}
+res_all <- data.frame(res) %>% mutate(threshold = padj < 0.05)
+
+res_all$genelabels <- ifelse(res_all$tmp.SYMBOL %in% genes,as.character(res_all$tmp.SYMBOL), NA) 
+
+ggplot(res_all, aes(x = log2FoldChange, y = -log10(padj), color = threshold,label = genelabels)) + geom_point() + 
+        xlab("log2 fold change") + 
+        ylab("-log10 adjusted p-value") + 
+        theme(legend.position = "none", text = element_text(size = 10), 
+              plot.title = element_text(size = rel(1.5), hjust = 0.5), 
+              axis.title = element_text(size = rel(1.25)))
+
+```
+Let's plot a heatmap to show the expression level of the 5 genes across all samples.
+```{r}
+# get the normalized counts form dds
+counts <- counts(dds, normalized=TRUE)
+ensg <- res[res$tmp.SYMBOL %in% genes, ]$Row.names
+counts_sub <- counts[ensg,]
+rownames(counts_sub) <- genes
+pheatmap(counts_sub)
+```
+We can see the expression level of FOXA2, GATA4, CEBPA is similar across all samples; while HNF4A has an unusual high expression in iPSC-Hep4; CDX2, the intestile marker, has unusual high expression in hiHeps and in one of the PHHs and iPSCs. This could suggest that in early PHHs (PHH_0d means PHHs incubated for 0 days), CDX2's expression level is high, and this will explain for the high expression levels of CDX2 in hiHeps.
+
+Overall, we can conclude that for biologically functional HLCs, the expression of the following marker genes - FOXA2, GATA4, HNF4a, CEBPα, CDX2 - is similar to natural hepatocytes at some time point.

@@ -1,0 +1,12 @@
+hiHep1_mRNA.fastq.gz
+hiHep2_mRNA.fastq.gz
+hiHep3_mRNA.fastq.gz
+hiHep4_mRNA.fastq.gz
+hiPSC-Hep1_mRNA.fastq.gz
+hiPSC-Hep2_mRNA.fastq.gz
+hiPSC-Hep3_mRNA.fastq.gz
+hiPSC-Hep4_mRNA.fastq.gz
+PHH_0d_mRNA.fastq.gz
+PHH_1d_mRNA.fastq.gz
+PHH_2d_mRNA.fastq.gz
+PHH_4d_mRNA.fastq.gz
