@@ -1,8 +1,8 @@
 # BIMM143-project2
 
-fastas: contain one fasta file named genes.fasta, which contains 10 sequences: the 10 sequences come from following five human genes: FOXA2, GATA4, HNF4a, CEBPα, CDX2, and their analogs in mice or pigs.
+fastas: contain one fasta file named genes.fasta, which contains 10 sequences: the 10 sequences come from following five human genes: FOXA2, GATA4, HNF4a, CEBPα, CDX2, and their analogs in mice or pigs. The specific ncbi gene id for each sequence can be found in Project2.rmd.
 
-kallisto: this folder contains intermediate RNAseq data in 12 sub folders. The raw data downloaded from ncbi geo is informat of raw fastq files, so I aligned them using kallisto before importing the data into R. Each folder represents the alignment result of a single sample (sample name is the folder's name). For each sample, an abundance.h5 file is included: this is the alignment result of that sample that can be read into R as a count matrix using tximport. The filenames.txt in the folder is the names of the fastqs files downloaded from ncbi geo; it is used for generating a metatable for RNAseq.
+kallisto: this folder contains intermediate RNAseq data in 12 sub folders. The raw data downloaded from ncbi geo (access number GSE103078) is informat of raw fastq files, so I aligned them using kallisto before importing the data into R. Each folder represents the alignment result of a single sample (sample name is the folder's name). For each sample, an abundance.h5 file is included: this is the alignment result of that sample that can be read into R as a count matrix using tximport. The filenames.txt in the folder is the names of the fastqs files downloaded from ncbi geo; it is used for generating a metatable for RNAseq.
 
 Project2.rmd & Project2.nb.html: the R notebook and its html version of my project 2 notebook first draft.
 
