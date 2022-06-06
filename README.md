@@ -5,9 +5,13 @@ fastas: contain one fasta file named genes.fasta, which contains 10 sequences: t
 kallisto: this folder contains intermediate RNAseq data in 12 sub folders. The raw data downloaded from ncbi geo (access number GSE103078) is informat of raw fastq files, so I aligned them using kallisto before importing the data into R. Each folder represents the alignment result of a single sample (sample name is the folder's name). For each sample, an abundance.h5 file is included: this is the alignment result of that sample that can be read into R as a count matrix using tximport. The filenames.txt in the folder is the names of the fastqs files downloaded from ncbi geo; it is used for generating a metatable for RNAseq.
 
 CDX2.html: The color coded alignment result between human CDX2 mRNA and mice CDX2 mRNA.
+
 CEBPA.html: The color coded alignment result between human CEBPA mRNA and pig CEBPA mRNA.
+
 FOXA2.html: The color coded alignment result between human FOXA2 mRNA and mice FOXA2 mRNA.
+
 GATA4.html: The color coded alignment result between human GATA4 mRNA and mice GATA4 mRNA.
+
 HNF4A.html: The color coded alignment result between human HNF4A mRNA and mice HNF4A mRNA.
 
 Project2.rmd & Project2.nb.html: the R notebook and its html version of my project 2 notebook (final version).
